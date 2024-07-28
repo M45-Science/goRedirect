@@ -1,4 +1,5 @@
-/fullchain.pem
-/goRedirect
-/privkey.pem
-/log
+fullchain.pem
+goRedirect
+privkey.pem
+log
+apps.json
