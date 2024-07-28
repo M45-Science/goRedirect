@@ -1,3 +1,5 @@
+# Steam URL quick-connect redirect service
+
   -httpPort int
   
         port to bind to (default 80)
