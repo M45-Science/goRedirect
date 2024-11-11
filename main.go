@@ -52,6 +52,7 @@ func main() {
 	bindIP = flag.String("ip", "", "IP to bind to")
 	bindPortHTTPS = flag.Int("httpsPort", 443, "port to bind to for HTTPS")
 	bindPortHTTP = flag.Int("httpPort", 80, "port to bind to")
+	forceUpdate := flag.Bool("forceUpdate", false, "download the steamDB at launch.")
 
 	flag.Parse()
 
@@ -73,9 +74,10 @@ func main() {
 	appList = make(map[uint64]*appData)
 
 	readDatabase(false)
+	if *forceUpdate {
+		updateDatabase(true)
+	}
 	lastUpdate = time.Now()
-
-	//debug.SetMemoryLimit(1024 * 1024 * 10)
 
 	/* Load certificates */
 	cert, err := tls.LoadX509KeyPair("fullchain.pem", "privkey.pem")

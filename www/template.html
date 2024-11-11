@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{.Title}}</title>
+  <style>
+    body {
+      background-color: #1c1c1e;
+      color: #e1e1e6;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background-color: #2a2a2d;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card-header {
+      font-size: 28px;
+      color: #61dafb;
+      margin-bottom: 15px;
+    }
+    .section {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: #333;
+      border-radius: 8px;
+      text-align: center; /* Center-aligns the button */
+    }
+    .section h2 {
+      font-size: 22px;
+      margin: 0;
+      color: #61dafb;
+    }
+    .section p {
+      margin: 10px 0 0;
+      font-size: 18px;
+      color: #e1e1e6;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 18px;
+      text-decoration: none;
+      background-color: #61dafb;
+      color: #1c1c1e;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .button:hover {
+      background-color: #4da4c7;
+      transform: scale(1.05);
+    }
+    .link {
+      color: #61dafb;
+      text-decoration: none;
+    }
+    .link:hover {
+      color: #4da4c7;
+    }
+    .minor-note {
+      font-size: 14px !important;
+      color: #777 !important;
+      font-style: italic;
+      margin-top: 5px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 25px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">Connect with {{.AppName}}</div>
+    
+    <div class="section">
+      <a href="{{.SteamURL}}" class="button">Launch Game</a>
+      <p class="minor-note">Command that will run:<br>'{{.Command}}'</p>
+    </div>
+
+    <div class="section">
+      <p>App ID: {{.AppID}}</p>
+      <a href="https://steamdb.info/app/{{.AppID}}/" class="link">Lookup appid on steamdb.info</a>
+    </div>
+
+    <div class="footer">
+      <p>Brought to you by <a href="https://go-game.net/" class="link">go-game.net</a></p>
+    </div>
+  </div>
+</body>
+</html>

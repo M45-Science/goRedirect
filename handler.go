@@ -5,7 +5,9 @@ import (
 	"goRedirect/cwlog"
 	"goRedirect/sclean"
 	"html"
+	"html/template"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +16,20 @@ import (
 )
 
 const (
-	title          = "Redirect"
 	redirectPrefix = "/gosteam/"
 	maxUrlLen      = 128
 )
 
-func httpsHandler(w http.ResponseWriter, r *http.Request) {
+// Define a struct to hold template data
+type TemplateData struct {
+	Title    string
+	AppName  string
+	AppID    uint64
+	SteamURL string
+	Command  string
+}
 
+func httpsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		return
 	}
@@ -29,10 +38,12 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/* Stop if URL is big */
+	// Stop if URL is too long
 	if len(r.URL.Path) > maxUrlLen {
 		return
 	}
+
+	// Extract and clean URL parts
 	input := html.UnescapeString(r.URL.Path)
 	input = strip.StripTags(input)
 	args := strings.SplitN(input, ".", 2)
@@ -42,13 +53,15 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Parse application ID and command
 	appinput, command := strings.TrimPrefix(args[0], redirectPrefix), args[1]
 	appint, err := strconv.ParseUint(appinput, 10, 64)
 	if err != nil {
 		return
 	}
 
-	appName := ""
+	// Retrieve app name, or set as unknown if not found
+	var appName string
 	dbLock.RLock()
 	appData := appList[appint]
 	dbLock.RUnlock()
@@ -56,32 +69,42 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 	if appData != nil {
 		appName = sclean.StripControlAndSpecial(appData.Name)
 	} else {
-		/* Update and try to find it, if we haven't updated recently */
 		if time.Since(lastUpdate) > updateInterval {
 			dbLock.Lock()
 			updateDatabase(true)
 			appData = appList[appint]
 			dbLock.Unlock()
 		}
-
-		/* Handle found and not found */
 		if appData == nil {
-			appName = "UNKNOWN steam appid: " + strconv.FormatUint(appint, 10)
+			appName = "UNKNOWN"
 		} else {
 			appName = sclean.StripControlAndSpecial(appData.Name)
 		}
 	}
 
-	steamURL := fmt.Sprintf("steam://run/%v//%v/", appint, command)
+	// Prepare data for the template
+	data := TemplateData{
+		Title:    "GoSteam Redirect Service",
+		AppName:  appName,
+		AppID:    appint,
+		SteamURL: fmt.Sprintf("steam://run/%v//%v/", appint, command),
+		Command:  command,
+	}
 
-	launch := fmt.Sprintf("<a href=\"%v\">Connect with %v</a><br>will run command:<br>'%v'", steamURL, appName, command)
-	lookup := fmt.Sprintf("<br><br><a href=\"https://steamdb.info/app/%v/\">Lookup appid</a><br>(steamdb.info)", appint)
-	footer := "<br><br>Brought to you by:<br><a href=\"https://go-game.net/\">go-game.net</a>"
-	body := launch + lookup + footer
+	// Load and parse the template file
+	tmpl, err := template.ParseFiles(filepath.Join("www", "template.html"))
+	if err != nil {
+		http.Error(w, "Error loading template", http.StatusInternalServerError)
+		return
+	}
 
-	main := "<!DOCTYPE html><html><header><title>%v</title><style>body {color: #ffffff;background-color: #1f1f1f;font-size: 20px;line-height: 1.42857143;font-family: Lato;text-align:center;}</style></header><body><br>%v</body></html>"
-	htmlText := fmt.Sprintf(main, title, body)
+	// Render the template with data
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		return
+	}
 
-	w.Write([]byte(htmlText))
+	// Log the redirect
 	cwlog.DoLog(false, "redirect: %v: %v", appName, command)
 }
