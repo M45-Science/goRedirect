@@ -3,3 +3,4 @@ goRedirect
 privkey.pem
 log
 apps.json
+server.key

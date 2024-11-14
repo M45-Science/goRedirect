@@ -87,7 +87,7 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 		Title:    "GoSteam Redirect Service",
 		AppName:  appName,
 		AppID:    appint,
-		SteamURL: fmt.Sprintf("steam://run/%v//%v/", appint, command),
+		SteamURL: fmt.Sprintf("%v//%v/", appint, command),
 		Command:  command,
 	}
 
